@@ -10,6 +10,9 @@ import type {
   EventPublisher,
 } from "../src/modules/acervo/domain/events";
 import type { LivroRepository } from "../src/modules/acervo/domain/LivroRepository";
+import type { Autor } from "../src/modules/autoria/domain/Autor";
+import type { AutorRepository } from "../src/modules/autoria/domain/AutorRepository";
+import type { Orcid } from "../src/modules/autoria/domain/Orcid";
 
 export class InMemoryLivroRepository implements LivroRepository {
   private items: Livro[] = [];
@@ -73,5 +76,35 @@ export class FakeEventPublisher implements EventPublisher {
 
   publish(event: AcervoEvent): void {
     this.published.push(event);
+  }
+}
+
+export class InMemoryAutorRepository implements AutorRepository {
+  private items: Autor[] = [];
+  private nextId = 1;
+
+  insert(autor: Autor): Autor {
+    const salvo = autor.withId(new AutorId(this.nextId++));
+    this.items.push(salvo);
+
+    return salvo;
+  }
+
+  findById(autorId: AutorId): Autor | null {
+    return this.items.find((item) => item.id?.equals(autorId)) ?? null;
+  }
+
+  findByOrcid(orcid: Orcid): Autor | null {
+    return this.items.find((item) => item.orcid?.equals(orcid)) ?? null;
+  }
+
+  findByNomeSemelhante(nome: string): Autor[] {
+    const alvo = nome.trim().toLowerCase();
+
+    return this.items.filter((item) => item.nome.toLowerCase().includes(alvo));
+  }
+
+  ajustarLivrosNoAcervo(): void {
+    /* a projeção não participa deste caso de uso */
   }
 }
